@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { TablaAvatar } from "@/components/tabla-avatar";
 
 export default function Home() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+      <TablaAvatar className="w-32 h-32 mb-6" />
       <h1 className="text-4xl font-bold tracking-tight text-neutral-900 mb-4">
         Learn Tabla, Online, Live.
       </h1>

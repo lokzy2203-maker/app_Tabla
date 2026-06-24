@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { TablaAvatar } from "@/components/tabla-avatar";
 
 export function NavBar() {
   const { data: session } = useSession();
@@ -9,7 +10,8 @@ export function NavBar() {
   return (
     <header className="border-b border-neutral-200 bg-white">
       <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="font-semibold text-orange-700">
+        <Link href="/" className="flex items-center gap-2 font-semibold text-orange-700">
+          <TablaAvatar className="w-8 h-8" />
           Tabla Academy
         </Link>
 
