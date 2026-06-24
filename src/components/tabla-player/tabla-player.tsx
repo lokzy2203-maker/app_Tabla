@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { TAAL_PRESETS, parseNotation, type NotationToken } from "@/lib/taal-presets";
-import { getBolProfile, playBolSound } from "@/lib/tabla-sounds";
+import { getBolProfile, getStrikeDrum, playBolSound } from "@/lib/tabla-sounds";
+import { Tabla3D, type Tabla3DHandle } from "@/components/tabla-player/tabla-3d";
 
 const PALETTE = [
   "Dha", "Dhin", "Ge", "Na", "Tin", "Ta", "Ka", "Ki", "Ti", "Ra",
@@ -29,6 +30,7 @@ export function TablaPlayer() {
   const schedulerHandleRef = useRef<number | null>(null);
   const rafHandleRef = useRef<number | null>(null);
   const notesInQueueRef = useRef<ScheduledNote[]>([]);
+  const tabla3dRef = useRef<Tabla3DHandle>(null);
 
   useEffect(() => {
     tokensRef.current = parseNotation(notation);
@@ -45,9 +47,18 @@ export function TablaPlayer() {
   const ensureAudio = () => {
     if (!audioCtxRef.current) {
       const ctx = new AudioContext();
+      const compressor = ctx.createDynamicsCompressor();
+      compressor.threshold.value = -18;
+      compressor.knee.value = 18;
+      compressor.ratio.value = 4;
+      compressor.attack.value = 0.002;
+      compressor.release.value = 0.15;
+      compressor.connect(ctx.destination);
+
       const gain = ctx.createGain();
-      gain.gain.value = 0.9;
-      gain.connect(ctx.destination);
+      gain.gain.value = 1.0;
+      gain.connect(compressor);
+
       audioCtxRef.current = ctx;
       masterGainRef.current = gain;
     }
@@ -69,6 +80,12 @@ export function TablaPlayer() {
       if (!token.isRest) {
         const profile = getBolProfile(token.raw);
         if (profile) playBolSound(ctx, nextNoteTimeRef.current, profile, gain);
+
+        const drum = getStrikeDrum(token.raw);
+        const delayMs = (nextNoteTimeRef.current - ctx.currentTime) * 1000;
+        if (drum) {
+          window.setTimeout(() => tabla3dRef.current?.strike(drum), Math.max(0, delayMs));
+        }
       }
 
       notesInQueueRef.current.push({ time: nextNoteTimeRef.current, index: idx });
@@ -147,6 +164,11 @@ export function TablaPlayer() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <Tabla3D ref={tabla3dRef} />
+        <p className="text-xs text-neutral-400 mt-1">Drag to rotate, scroll to zoom.</p>
+      </div>
+
       <div>
         <label className="block text-sm font-medium mb-1">Taal preset</label>
         <select

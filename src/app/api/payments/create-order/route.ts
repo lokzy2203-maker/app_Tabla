@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { razorpay } from "@/lib/razorpay";
+import { getRazorpay } from "@/lib/razorpay";
 
 const schema = z.object({ courseId: z.string() });
 
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Already enrolled" }, { status: 409 });
   }
 
-  const order = await razorpay.orders.create({
+  const order = await getRazorpay().orders.create({
     amount: course.priceInPaise,
     currency: "INR",
     notes: { courseId: course.id, studentId: session.user.id },
