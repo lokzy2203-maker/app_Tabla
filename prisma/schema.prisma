@@ -47,6 +47,8 @@ model User {
   attendances     Attendance[]
   practiceUploads PracticeRecording[]
   payments        Payment[]
+
+  compositions Composition[]
 }
 
 model Course {
@@ -144,4 +146,22 @@ model PracticeRecording {
   feedback     String?
   status       FeedbackStatus @default(PENDING)
   createdAt    DateTime       @default(now())
+}
+
+model Composition {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  title     String
+  taal      String?
+  notation  String
+  createdAt DateTime @default(now())
+}
+
+model TablaModel {
+  id           String   @id @default(cuid())
+  order        Int
+  transitions  Json
+  exampleCount Int
+  trainedAt    DateTime @default(now())
 }

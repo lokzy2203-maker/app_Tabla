@@ -15,8 +15,13 @@ const LOOKAHEAD_MS = 25;
 
 type ScheduledNote = { time: number; index: number };
 
-export function TablaPlayer() {
-  const [notation, setNotation] = useState(TAAL_PRESETS[0].notation);
+export function TablaPlayer({
+  notation,
+  onNotationChange,
+}: {
+  notation: string;
+  onNotationChange: (next: string) => void;
+}) {
   const [bpm, setBpm] = useState(80);
   const [loop, setLoop] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -157,7 +162,7 @@ export function TablaPlayer() {
   };
 
   const insertToken = (token: string) => {
-    setNotation((prev) => (prev.trim().length === 0 ? token : `${prev.trim()} ${token}`));
+    onNotationChange(notation.trim().length === 0 ? token : `${notation.trim()} ${token}`);
   };
 
   const tokens = parseNotation(notation);
@@ -176,7 +181,7 @@ export function TablaPlayer() {
             const preset = TAAL_PRESETS.find((p) => p.name === e.target.value);
             if (preset) {
               stop();
-              setNotation(preset.notation);
+              onNotationChange(preset.notation);
             }
           }}
           className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
@@ -200,7 +205,7 @@ export function TablaPlayer() {
         <textarea
           rows={3}
           value={notation}
-          onChange={(e) => setNotation(e.target.value)}
+          onChange={(e) => onNotationChange(e.target.value)}
           className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm font-mono"
         />
         <div className="flex flex-wrap gap-1.5 mt-2">
