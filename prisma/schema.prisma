@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+}
+
+enum FeedbackStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          Role
+  createdAt     DateTime @default(now())
+
+  // Teacher relations
+  coursesTaught   Course[]      @relation("TeacherCourses")
+  sessionsHosted  LiveSession[] @relation("TeacherSessions")
+
+  // Student relations
+  enrollments     Enrollment[]
+  attendances     Attendance[]
+  practiceUploads PracticeRecording[]
+  payments        Payment[]
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  priceInPaise Int
+  teacherId   String
+  teacher     User     @relation("TeacherCourses", fields: [teacherId], references: [id])
+  createdAt   DateTime @default(now())
+
+  enrollments  Enrollment[]
+  liveSessions LiveSession[]
+  contents     CourseContent[]
+}
+
+model Enrollment {
+  id         String   @id @default(cuid())
+  studentId  String
+  student    User     @relation(fields: [studentId], references: [id])
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id])
+  createdAt  DateTime @default(now())
+  payment    Payment?
+
+  @@unique([studentId, courseId])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  studentId         String
+  student           User          @relation(fields: [studentId], references: [id])
+  enrollmentId      String?       @unique
+  enrollment        Enrollment?   @relation(fields: [enrollmentId], references: [id])
+  amountInPaise     Int
+  razorpayOrderId   String        @unique
+  razorpayPaymentId String?
+  status            PaymentStatus @default(CREATED)
+  createdAt         DateTime      @default(now())
+}
+
+model LiveSession {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id])
+  teacherId   String
+  teacher     User     @relation("TeacherSessions", fields: [teacherId], references: [id])
+  title       String
+  meetingLink String
+  startsAt    DateTime
+  durationMin Int      @default(60)
+  createdAt   DateTime @default(now())
+
+  summary     LectureSummary?
+  attendances Attendance[]
+}
+
+model LectureSummary {
+  id        String      @id @default(cuid())
+  sessionId String      @unique
+  session   LiveSession @relation(fields: [sessionId], references: [id])
+  content   String
+  createdAt DateTime    @default(now())
+}
+
+model Attendance {
+  id        String           @id @default(cuid())
+  sessionId String
+  session   LiveSession      @relation(fields: [sessionId], references: [id])
+  studentId String
+  student   User             @relation(fields: [studentId], references: [id])
+  status    AttendanceStatus @default(ABSENT)
+  markedAt  DateTime         @default(now())
+
+  @@unique([sessionId, studentId])
+}
+
+model CourseContent {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  title     String
+  fileUrl   String
+  fileType  String
+  createdAt DateTime @default(now())
+}
+
+model PracticeRecording {
+  id           String         @id @default(cuid())
+  studentId    String
+  student      User           @relation(fields: [studentId], references: [id])
+  fileUrl      String
+  taal         String?
+  tempoBpm     Float?
+  feedback     String?
+  status       FeedbackStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+}
