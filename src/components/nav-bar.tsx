@@ -22,6 +22,9 @@ export function NavBar() {
               <Link href="/courses" className="text-neutral-700 hover:text-orange-700">
                 Courses
               </Link>
+              <Link href="/tabla-player" className="text-neutral-700 hover:text-orange-700">
+                AI Tabla Player
+              </Link>
               <span className="text-neutral-400">|</span>
               <span className="text-neutral-500">{session.user.name}</span>
               <button
@@ -35,6 +38,9 @@ export function NavBar() {
             <>
               <Link href="/courses" className="text-neutral-700 hover:text-orange-700">
                 Courses
+              </Link>
+              <Link href="/tabla-player" className="text-neutral-700 hover:text-orange-700">
+                AI Tabla Player
               </Link>
               <Link href="/login" className="text-neutral-700 hover:text-orange-700">
                 Sign in
